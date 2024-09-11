@@ -3,16 +3,7 @@ defmodule Ecto.ULID do
   An Ecto type for ULID strings.
   """
 
-  # replace with `use Ecto.Type` after Ecto 3.2.0 is required
   @behaviour Ecto.Type
-  # and remove both of these functions
-  def embed_as(_), do: :self
-  def equal?(term1, term2), do: term1 == term2
-
-  @typedoc """
-  A hex-encoded ULID string.
-  """
-  @type t :: <<_::208>>
 
   @doc """
   The underlying schema type.
@@ -22,35 +13,42 @@ defmodule Ecto.ULID do
   @doc """
   Casts a string to ULID.
   """
-  def cast(<<_::bytes-size(26)>> = value) do
-    if valid?(value) do
-      {:ok, value}
-    else
-      :error
-    end
+  # def cast(<<_::bytes-size(26)>> = value) do
+  #   if valid?(value) do
+  #     {:ok, value}
+  #   else
+  #     :error
+  #   end
+  # end
+  # def cast(_), do: :error
+  def cast(any) do
+    Ecto.UUID.cast(any)
   end
-  def cast(_), do: :error
 
   @doc """
   Same as `cast/1` but raises `Ecto.CastError` on invalid arguments.
   """
   def cast!(value) do
-    case cast(value) do
-      {:ok, ulid} -> ulid
-      :error -> raise Ecto.CastError, type: __MODULE__, value: value
-    end
+    # case cast(value) do
+    #   {:ok, ulid} -> ulid
+    #   :error -> raise Ecto.CastError, type: __MODULE__, value: value
+    # end
+    Ecto.UUID.cast!(value)
   end
 
   @doc """
   Converts a Crockford Base32 encoded ULID into a binary.
   """
-  def dump(<<_::bytes-size(26)>> = encoded), do: decode(encoded)
-  def dump(_), do: :error
+  # def dump(<<_::bytes-size(26)>> = encoded), do: decode(encoded)
+  # def dump(_), do: :error
+  def dump(term) do
+    Ecto.UUID.dump(term)
+  end
 
   @doc """
   Converts a binary ULID into a Crockford Base32 encoded string.
   """
-  def load(<<_::unsigned-size(128)>> = bytes), do: encode(bytes)
+  def load(<<_::unsigned-size(128)>> = bytes), do: Ecto.UUID.load(bytes)
   def load(_), do: :error
 
   @doc false
@@ -67,7 +65,7 @@ defmodule Ecto.ULID do
   * `timestamp`: A Unix timestamp with millisecond precision.
   """
   def generate(timestamp \\ System.system_time(:millisecond)) do
-    {:ok, ulid} = encode(bingenerate(timestamp))
+    {:ok, ulid} = Ecto.UUID.load(bingenerate(timestamp))
     ulid
   end
 
